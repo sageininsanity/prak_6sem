@@ -20,7 +20,7 @@ if __name__ == "__main__":
                 print("ERROR: run program in update mode first")
                 exit(0)
             X = pd.read_csv(args.path_to_data)
-            X = ModelManager.inference(X)
+            X = ModelManager.inference(DataPreprocessor.transform(X))
             fn = f"inference/{uuid.uuid4()}.csv"
             pd.save_csv(fn)
             print(f"saved at {fn}")
