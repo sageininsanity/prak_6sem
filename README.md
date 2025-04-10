@@ -49,3 +49,6 @@ To reset the system to its initial state, run
 ```bash
 make clean
 ```
+Note, however, that for this script to work correctly, you have to run inference and summary at least once (will be fixed, hopefully).
+
+This pipeline may satisfy a "chain of responsibility" pattern, as data is passed through independent agents with the usage of shared context in form of config.json.
