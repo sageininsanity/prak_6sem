@@ -32,3 +32,24 @@ class DataPreprocessor:
         ft = NUM_FEATURES + ["DURATION", "HAS_CLAIM"]
         num = np.array(batch[ft], dtype=np.float64)
         return np.concatenate([num, cat], axis=1), np.array(batch["CLAIM_PAID"])
+    
+    def transform_for_inference(batch: pd.DataFrame):
+        """
+        Transforms a batch for it to be fed to the model.
+        ### Args
+        batch: batch to be transformed.
+        """
+        batch["DURATION"] = (pd.to_datetime(batch["INSR_END"], format=r'%d-%b-%y') - pd.to_datetime(batch["INSR_BEGIN"], format=r'%d-%b-%y')).dt.days
+        with open("encoder.pkl", "rb") as f:
+            encoder = pickle.load(f)
+        imputer_cat = SimpleImputer(missing_values=pd.NA, strategy="most_frequent")
+        imputer_num = SimpleImputer(missing_values=pd.NA, strategy="median")
+        batch[CAT_FEATURES] = imputer_cat.fit_transform(batch[CAT_FEATURES].astype("category"))
+        batch[NUM_FEATURES] = imputer_num.fit_transform(batch[NUM_FEATURES])
+        cat = encoder.transform(batch[CAT_FEATURES])
+        batch["HAS_CLAIM"] = np.ones(batch.shape[0])
+        with open("encoder.pkl", "wb") as f:
+            pickle.dump(encoder, f)
+        ft = NUM_FEATURES + ["DURATION", "HAS_CLAIM"]
+        num = np.array(batch[ft], dtype=np.float64)
+        return np.concatenate([num, cat], axis=1)

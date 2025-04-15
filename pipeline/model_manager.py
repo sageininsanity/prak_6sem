@@ -1,4 +1,4 @@
-import pickle, json
+import pickle, json, pandas as pd
 import matplotlib.pyplot as plt
 
 class ModelManager:
@@ -7,9 +7,7 @@ class ModelManager:
         with open("models/best_model.pkl", "rb") as f:
             model = pickle.load(f)
 
-        X["predict"] = model.predict(X)
-
-        return X
+        return model.predict(X)
     
     @staticmethod
     def summarize():

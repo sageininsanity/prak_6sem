@@ -10,3 +10,4 @@ clean:
 	rm models/PARegressor/*
 	rm models/SGDRegressor/*
 	rm models/best_model.pkl
+	rm inference/*

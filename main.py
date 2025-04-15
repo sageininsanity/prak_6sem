@@ -19,10 +19,11 @@ if __name__ == "__main__":
             if not os.path.exists("models/best_model.pkl"):
                 print("ERROR: run program in update mode first")
                 exit(0)
-            X = pd.read_csv(args.path_to_data)
-            X = ModelManager.inference(DataPreprocessor.transform(X))
+            X = pd.read_csv(args.path_to_data, names=HEADER)
+            pred = ModelManager.inference(DataPreprocessor.transform_for_inference(X))
+            X["predict"] = pred
             fn = f"inference/{uuid.uuid4()}.csv"
-            pd.save_csv(fn)
+            X.to_csv(fn)
             print(f"saved at {fn}")
 
         case "update":
