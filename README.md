@@ -25,6 +25,8 @@
 
 -vanilla: auxiliary directory for reset of the system  
 
+-description.md: Russian description of the task
+
 -logging.conf: *configs for logger*
 
 -main.py: point of entry & cmdline interface
@@ -52,3 +54,5 @@ make clean
 Note, however, that for this script to work correctly, you have to run inference and summary at least once (will be fixed, hopefully).
 
 This pipeline may satisfy a "chain of responsibility" pattern, as data is passed through independent agents with the usage of shared context in form of config.json.
+
+[Scores table](https://docs.google.com/spreadsheets/d/1RtUS9YEkEujFP3oKvpEhQOw1mwczaVX6xU5cGkp-wQE/edit?usp=sharing)
