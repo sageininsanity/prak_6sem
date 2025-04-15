@@ -5,9 +5,12 @@ clean:
 	cp vanilla/* .
 	rm encoder.pkl
 	rm data/batches/*
-	rm summary/*
 	rm models/MLPRegressor/*
 	rm models/PARegressor/*
 	rm models/SGDRegressor/*
 	rm models/best_model.pkl
+	rm summary/*
 	rm inference/*
+
+recover:
+	cp vanilla/* .
