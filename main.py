@@ -9,6 +9,8 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--mode", type=str, required=True, choices=["inference", "update", "summary"])
     parser.add_argument("-p", "--path_to_data", type=str, required=False)
 
+    os.makedirs("data/batches", exist_ok=True)
+
     args = parser.parse_args()
 
     match(args.mode):
