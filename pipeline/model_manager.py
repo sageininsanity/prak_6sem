@@ -1,7 +1,8 @@
-import pickle, json, pandas as pd
+import pickle, json, pandas as pd, logging
 import matplotlib.pyplot as plt
 
 class ModelManager:
+    logger = logging.getLogger(__name__)
     @staticmethod
     def inference(X):
         with open("models/best_model.pkl", "rb") as f:
@@ -26,3 +27,4 @@ class ModelManager:
         plt.legend(("MLP", "PassiveAgressive", "SGD"))
         plt.title("MSE over model versions.")
         plt.savefig("summary/report.png")
+        ModelManager.logger.info(f"Saved graph of MSE at summary/report.png")

@@ -1,15 +1,13 @@
 clean:
-	rm config.json
-	rm meta.json
-	rm dq.json
+	rm -f config.json
+	rm -f meta.json
+	rm -f dq.json
 	cp vanilla/* .
-	rm data/batches/*
-	rm models/MLPRegressor/*
-	rm models/PARegressor/*
-	rm models/SGDRegressor/*
-	rm models/best_model.pkl
-	rm summary/*
-	rm inference/*
-
-recover:
-	cp vanilla/* .
+	rm -f training.log
+	rm -f data/batches/*
+	rm -f models/MLPRegressor/*
+	rm -f models/PARegressor/*
+	rm -f models/SGDRegressor/*
+	rm -f models/best_model.pkl
+	rm -f summary/*
+	rm -f inference/*

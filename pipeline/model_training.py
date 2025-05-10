@@ -3,11 +3,12 @@ from sklearn.linear_model import PassiveAggressiveRegressor
 from sklearn.linear_model import SGDRegressor
 
 from sklearn.metrics import mean_squared_error
-import json, pickle, numpy as np
+import json, pickle, numpy as np, logging
 
 models = ["MLPRegressor", "PARegressor", "SGDRegressor"]
 
 class ModelTrainer:
+    logger = logging.getLogger(__name__)
     @staticmethod
     def fit_models(X, y):
         """
@@ -41,6 +42,8 @@ class ModelTrainer:
 
         metr1, metr2, metr3 = mean_squared_error(y_val, m1.predict(X_val)), mean_squared_error(y_val, m2.predict(X_val)), mean_squared_error(y_val, m3.predict(X_val))
         best_model = [m1, m2, m3][np.argmin(np.array([metr1, metr2, metr3]))]
+
+        ModelTrainer.logger.info(f"Best model after iteration {conf_dict['model_version']} is {type(best_model).__name__}")
 
         with open("models/best_model.pkl", "wb") as f:
             pickle.dump(best_model, f)

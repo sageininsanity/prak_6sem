@@ -1,8 +1,9 @@
-import json, pandas as pd, numpy as np
+import json, pandas as pd, numpy as np, logging
 from .common import CAT_FEATURES, NUM_FEATURES
 from .data_collector import DataCollector
 
 class DataAnalyser:
+    logger = logging.getLogger(__name__)
     @staticmethod
     def calc_dq_metrics(batch_num, all=False):
         """
@@ -41,7 +42,8 @@ class DataAnalyser:
         ### Args:
         batch: batch to perform cleaning on.
         """
-        batch.drop_duplicates()
+        orig_batch = batch
+        batch = batch.drop_duplicates()
         if batch[NUM_FEATURES].isnull().mean().mean() > 0.5: # 0.5 completeness threshold for num-features
             batch.dropna(axis=0, subset=NUM_FEATURES)
         OUTLIER_FT = ["PROD_YEAR", "SEATS_NUM", "CARRYING_CAPACITY"]
@@ -52,4 +54,6 @@ class DataAnalyser:
         q3 = quantiles.values[1]
         lower = pd.Series(q1 - 1.5 * iqr, batch[OUTLIER_FT].keys())
         upper = pd.Series(q3 + 1.5 * iqr, batch[OUTLIER_FT].keys())
-        return batch.loc[((batch[OUTLIER_FT] >= lower) & (batch[OUTLIER_FT] <= upper)).all(axis="columns")]
+        to_ret = batch.loc[((batch[OUTLIER_FT] >= lower) & (batch[OUTLIER_FT] <= upper)).all(axis="columns")]
+        DataAnalyser.logger.info(f"Based on outliers & missing values, dropped {len(batch) - len(to_ret)} objects.")
+        return to_ret

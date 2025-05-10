@@ -10,7 +10,7 @@ on:
 
 jobs:
   background-training:
-    runs-on: python:3.11
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -42,4 +42,4 @@ jobs:
     
     - name: Cleanup
       run:
-        make clean >/dev/null
+        make clean

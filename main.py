@@ -4,7 +4,7 @@ from pipeline.common import HEADER
 import uuid, logging, sys
 
 if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout)
+    logging.basicConfig(filename="training.log", level=logging.INFO, format="%(asctime)s - %(message)s")
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--mode", type=str, required=True, choices=["inference", "update", "summary"])
     parser.add_argument("-p", "--path_to_data", type=str, required=False)
