@@ -55,8 +55,8 @@ class DataCollector:
         meta[key]["n_rows"] = len(df)
         for col in CAT_FEATURES:
             cols = [name for name in IMPROVED_HEADER if (col in name and "_nan" not in name and df[name].any())]
-            meta[key][f"{col}_distr"] = list(df[cols].sum(axis=1) / df[cols].sum())
-        meta[key]["missing_rate"] = float((df[NUM_FEATURES].isnull().sum().sum() + sum([df[name].sum() for name in IMPROVED_HEADER if "_nan" in name])) / (len(df) * len(CAT_FEATURES)))
+            meta[key][f"{col}_distr"] = list(df[cols].sum(axis=0) / df[cols].sum().sum())
+        meta[key]["missing_rate"] = float((df[NUM_FEATURES].isnull().sum().sum() + sum([df[name].sum() for name in IMPROVED_HEADER if "_nan" in name])) / (len(df) * (len(NUM_FEATURES) + len(CAT_FEATURES))))
         with open("meta.json", "w") as f:
             json.dump(meta, f)
         DataCollector.logger.info("Metafeatures updated and saved at meta.json.")
