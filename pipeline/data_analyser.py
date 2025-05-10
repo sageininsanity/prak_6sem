@@ -1,5 +1,6 @@
 import json, pandas as pd, numpy as np
-from pipeline.common import CAT_FEATURES
+from .common import CAT_FEATURES, NUM_FEATURES
+from .data_collector import DataCollector
 
 class DataAnalyser:
     @staticmethod
@@ -25,7 +26,7 @@ class DataAnalyser:
         dq_stat[key]["Completeness"] = meta[key]["missing_rate"]
         entropies = []
         for col in CAT_FEATURES:
-            p = np.array(list(meta[key][f"{col}_distr"].values()))
+            p = np.array(meta[key][f"{col}_distr"])
             entropy = np.sum(-(p * np.log(p)))
             entropies.append(float(entropy))
         dq_stat[key]["min_entropy"] = min(entropies)
@@ -41,8 +42,11 @@ class DataAnalyser:
         batch: batch to perform cleaning on.
         """
         batch.drop_duplicates()
+        if batch[NUM_FEATURES].isnull().mean().mean() > 0.5: # 0.5 completeness threshold for num-features
+            batch.dropna(axis=0, subset=NUM_FEATURES)
         OUTLIER_FT = ["PROD_YEAR", "SEATS_NUM", "CARRYING_CAPACITY"]
-        quantiles = batch[OUTLIER_FT].quantile([0.25, 0.75])
+        whole_df = DataCollector.get_whole_df()
+        quantiles = whole_df[OUTLIER_FT].quantile([0.25, 0.75])
         iqr = quantiles.diff().values[1]
         q1 = quantiles.values[0]
         q3 = quantiles.values[1]

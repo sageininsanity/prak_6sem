@@ -3,7 +3,6 @@ clean:
 	rm meta.json
 	rm dq.json
 	cp vanilla/* .
-	rm encoder.pkl
 	rm data/batches/*
 	rm models/MLPRegressor/*
 	rm models/PARegressor/*

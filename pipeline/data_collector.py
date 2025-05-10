@@ -2,27 +2,26 @@ import json
 import pandas as pd
 import logging
 import os
-from pipeline.common import HEADER
+from .common import HEADER, IMPROVED_HEADER, NUM_FEATURES, CAT_FEATURES
 
 class DataCollector:
     logger = logging.getLogger(__name__)
     @staticmethod
-    def get_batch(file_num: int):
+    def get_batch():
         """
         Extracts a batch from the raw storage and saves it elsewhere (stream emulation).
-        
-        ### Args:
-        file_num (int): randomly selected 0 or 1 (for multiple source simulation)
         """
-        file_key = "file0" if file_num == 0 else "file1"
         with open("config.json", "r") as f:    
             conf_dict = json.load(f)
-        batch = pd.read_csv(f"data/raw/{file_num}.csv", names=HEADER, header=None, nrows=conf_dict[file_key]["batch_size"], 
-                         skiprows=conf_dict[file_key]["batch_offset"])
+        batch_numerical = pd.read_csv(f"data/preprocessed_raw/num.csv", names=NUM_FEATURES, header=None, nrows=conf_dict["batch_size"], 
+                         skiprows=conf_dict["batch_offset"])
+        batch_categorical = pd.read_csv(f"data/preprocessed_raw/cat.csv", names=IMPROVED_HEADER, header=None, nrows=conf_dict["batch_size"], 
+                         skiprows=conf_dict["batch_offset"])
+        batch = pd.concat([batch_numerical, batch_categorical], axis=1)
         batch_filename = f"data/batches/batch_{conf_dict['batch_num']}.csv"
         batch.to_csv(batch_filename, index=False)
         conf_dict["batch_num"] += 1
-        conf_dict[file_key]["batch_offset"] += conf_dict[file_key]["batch_size"]
+        conf_dict["batch_offset"] += conf_dict["batch_size"]
         with open("config.json", "w") as f:
             json.dump(conf_dict, f)
         DataCollector.logger.info(f"Batch received, saved at {batch_filename}.")
@@ -54,9 +53,10 @@ class DataCollector:
             meta = json.load(f)
         meta[key] = {}
         meta[key]["n_rows"] = len(df)
-        for col in df.columns:
-            meta[key][f"{col}_distr"] = dict(df[col].value_counts(normalize=True))
-        meta[key]["missing_rate"] = df.isnull().mean().mean()
+        for col in CAT_FEATURES:
+            cols = [name for name in IMPROVED_HEADER if (col in name and "_nan" not in name and df[name].any())]
+            meta[key][f"{col}_distr"] = list(df[cols].sum(axis=1) / df[cols].sum())
+        meta[key]["missing_rate"] = float((df[NUM_FEATURES].isnull().sum().sum() + sum([df[name].sum() for name in IMPROVED_HEADER if "_nan" in name])) / (len(df) * len(CAT_FEATURES)))
         with open("meta.json", "w") as f:
             json.dump(meta, f)
         DataCollector.logger.info("Metafeatures updated and saved at meta.json.")

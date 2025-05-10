@@ -1,0 +1,2 @@
+from pipeline import RawPreprocessor
+RawPreprocessor.process_raw_data()

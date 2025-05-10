@@ -1,13 +1,10 @@
-from pipeline.data_collector import DataCollector
-from pipeline.data_analyser import DataAnalyser
-from pipeline.data_preprocessor import DataPreprocessor
-from pipeline.model_manager import ModelManager
-from pipeline.model_training import ModelTrainer
+from pipeline import *
 import argparse, os, random, pandas as pd
 from pipeline.common import HEADER
-import uuid
+import uuid, logging, sys
 
 if __name__ == "__main__":
+    logging.basicConfig(stream=sys.stdout)
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--mode", type=str, required=True, choices=["inference", "update", "summary"])
     parser.add_argument("-p", "--path_to_data", type=str, required=False)
@@ -27,7 +24,7 @@ if __name__ == "__main__":
             print(f"saved at {fn}")
 
         case "update":
-            batch_filename = DataCollector.get_batch(random.choice([0, 1]))
+            batch_filename = DataCollector.get_batch()
             batch = pd.read_csv(batch_filename)
             DataCollector.get_metafeatures(batch_filename)
             DataCollector.get_metafeatures()

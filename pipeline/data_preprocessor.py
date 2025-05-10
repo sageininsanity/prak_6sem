@@ -1,5 +1,5 @@
 import pandas as pd
-from pipeline.common import NUM_FEATURES, CAT_FEATURES
+from .common import NUM_FEATURES, CAT_FEATURES, IMPROVED_HEADER
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
@@ -13,24 +13,16 @@ class DataPreprocessor:
         ### Args
         batch: batch to be transformed.
         """
-        batch["HAS_CLAIM"] = ~batch["CLAIM_PAID"].isna()
+        nf = [ft for ft in NUM_FEATURES if ft not in ["INSR_BEGIN", "INSR_END"]]
+        batch["OLD"] = batch["PROD_YEAR"] <= 2000
+        batch["IN_USE"] = pd.to_datetime(batch["INSR_BEGIN"], format=r'%d-%b-%y').dt.year - batch["PROD_YEAR"]
         batch["DURATION"] = (pd.to_datetime(batch["INSR_END"], format=r'%d-%b-%y') - pd.to_datetime(batch["INSR_BEGIN"], format=r'%d-%b-%y')).dt.days
         batch["CLAIM_PAID"] = batch["CLAIM_PAID"].fillna(0) # NaN means no claim
-        if os.path.exists("encoder.pkl"):
-            with open("encoder.pkl", "rb") as f:
-                encoder = pickle.load(f)
-        else:
-            encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
-            encoder.fit(batch[CAT_FEATURES])
-        imputer_cat = SimpleImputer(missing_values=pd.NA, strategy="most_frequent")
         imputer_num = SimpleImputer(missing_values=pd.NA, strategy="median")
-        batch[CAT_FEATURES] = imputer_cat.fit_transform(batch[CAT_FEATURES].astype("category"))
-        batch[NUM_FEATURES] = imputer_num.fit_transform(batch[NUM_FEATURES])
-        cat = encoder.transform(batch[CAT_FEATURES])
-        with open("encoder.pkl", "wb") as f:
-            pickle.dump(encoder, f)
-        ft = NUM_FEATURES + ["DURATION", "HAS_CLAIM"]
+        batch[nf] = imputer_num.fit_transform(batch[nf])
+        ft = nf + ["DURATION", "OLD", "IN_USE"]
         num = np.array(batch[ft], dtype=np.float64)
+        cat = np.array(batch[IMPROVED_HEADER].drop([name for name in IMPROVED_HEADER if "_nan" in name], axis=1))
         return np.concatenate([num, cat], axis=1), np.array(batch["CLAIM_PAID"])
     
     def transform_for_inference(batch: pd.DataFrame):
@@ -39,17 +31,13 @@ class DataPreprocessor:
         ### Args
         batch: batch to be transformed.
         """
+        nf = [ft for ft in NUM_FEATURES if ft not in ["INSR_BEGIN", "INSR_END"]]
+        batch["OLD"] = batch["PROD_YEAR"] <= 2000
+        batch["IN_USE"] = pd.to_datetime(batch["INSR_BEGIN"], format=r'%d-%b-%y').dt.year - batch["PROD_YEAR"]
         batch["DURATION"] = (pd.to_datetime(batch["INSR_END"], format=r'%d-%b-%y') - pd.to_datetime(batch["INSR_BEGIN"], format=r'%d-%b-%y')).dt.days
-        with open("encoder.pkl", "rb") as f:
-            encoder = pickle.load(f)
-        imputer_cat = SimpleImputer(missing_values=pd.NA, strategy="most_frequent")
         imputer_num = SimpleImputer(missing_values=pd.NA, strategy="median")
-        batch[CAT_FEATURES] = imputer_cat.fit_transform(batch[CAT_FEATURES].astype("category"))
-        batch[NUM_FEATURES] = imputer_num.fit_transform(batch[NUM_FEATURES])
-        cat = encoder.transform(batch[CAT_FEATURES])
-        batch["HAS_CLAIM"] = np.ones(batch.shape[0])
-        with open("encoder.pkl", "wb") as f:
-            pickle.dump(encoder, f)
-        ft = NUM_FEATURES + ["DURATION", "HAS_CLAIM"]
+        batch[nf] = imputer_num.fit_transform(batch[nf])
+        ft = nf + ["DURATION", "OLD", "IN_USE"]
         num = np.array(batch[ft], dtype=np.float64)
+        cat = np.array(batch[IMPROVED_HEADER].drop([name for name in IMPROVED_HEADER if "_nan" in name], axis=1))
         return np.concatenate([num, cat], axis=1)
