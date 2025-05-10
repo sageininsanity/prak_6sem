@@ -16,7 +16,7 @@ class DataCollector:
         batch_numerical = pd.read_csv(f"data/preprocessed_raw/num.csv", names=NUM_FEATURES, header=None, nrows=conf_dict["batch_size"], 
                          skiprows=conf_dict["batch_offset"])
         batch_categorical = pd.read_csv(f"data/preprocessed_raw/cat.csv", names=IMPROVED_HEADER, header=None, nrows=conf_dict["batch_size"], 
-                         skiprows=conf_dict["batch_offset"])
+                         skiprows=conf_dict["batch_offset"], dtype=bool).astype(int)
         batch = pd.concat([batch_numerical, batch_categorical], axis=1)
         batch_filename = f"data/batches/batch_{conf_dict['batch_num']}.csv"
         batch.to_csv(batch_filename, index=False)

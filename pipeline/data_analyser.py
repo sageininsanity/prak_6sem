@@ -43,9 +43,10 @@ class DataAnalyser:
         batch: batch to perform cleaning on.
         """
         orig_batch = batch
+        nf = [ft for ft in NUM_FEATURES if ft != "CLAIM_PAID"]
         batch = batch.drop_duplicates()
-        if batch[NUM_FEATURES].isnull().mean().mean() > 0.5: # 0.5 completeness threshold for num-features
-            batch.dropna(axis=0, subset=NUM_FEATURES)
+        if batch.drop(columns=["CLAIM_PAID"])[nf].isnull().mean().mean() > 0.5: # 0.5 completeness threshold for num-features
+            batch = batch.dropna(axis=0, subset=nf)
         OUTLIER_FT = ["PROD_YEAR", "SEATS_NUM", "CARRYING_CAPACITY"]
         whole_df = DataCollector.get_whole_df()
         quantiles = whole_df[OUTLIER_FT].quantile([0.25, 0.75])
@@ -55,5 +56,5 @@ class DataAnalyser:
         lower = pd.Series(q1 - 1.5 * iqr, batch[OUTLIER_FT].keys())
         upper = pd.Series(q3 + 1.5 * iqr, batch[OUTLIER_FT].keys())
         to_ret = batch.loc[((batch[OUTLIER_FT] >= lower) & (batch[OUTLIER_FT] <= upper)).all(axis="columns")]
-        DataAnalyser.logger.info(f"Based on outliers & missing values, dropped {len(batch) - len(to_ret)} objects.")
+        DataAnalyser.logger.info(f"Based on outliers & missing values, dropped {len(orig_batch) - len(to_ret)} objects.")
         return to_ret
